@@ -42,7 +42,6 @@ function hook_dirs
         echo "${PWD}/.githooks${hook}"
     fi
     fi
-    eval echo "`git config hooks.global`"${hook}
 }
 
 function list_hooks_in_dir
@@ -52,17 +51,17 @@ function list_hooks_in_dir
 
     find --help 2>&1 | grep -- '-L' 2>/dev/null >/dev/null
     if [ $? -eq 1 ] ; then
-	Lopt=
+    Lopt=
     else
-	Lopt=-L
+    Lopt=-L
     fi
 
     find ${Lopt} "${path}/" \
-	 -mindepth ${level} \
-	 -maxdepth ${level} \
-	 \( -perm -100 -o -perm -010 -o -perm -001 \) \
-	 -type f 2>/dev/null \
-	| grep -v "^.$" | sort
+     -mindepth ${level} \
+     -maxdepth ${level} \
+     \( -perm -100 -o -perm -010 -o -perm -001 \) \
+     -type f 2>/dev/null \
+    | grep -v "^.$" | sort
 }
 
 function list_hooks
@@ -70,7 +69,7 @@ function list_hooks
     GITDIR=`git rev-parse --git-dir`
     cat "${GITDIR}/hooks/pre-commit" 2> /dev/null | grep 'git-hooks' > /dev/null 2> /dev/null
 
-    local dir_names=(User Repository Global)
+    local dir_names=(User Repository)
     local directories=$(hook_dirs)
     local index=0
 
@@ -81,7 +80,7 @@ function list_hooks
     local space_size=35
     local about=
 
-    echo 'Listing User, Project, and Global hooks:'
+    echo 'Listing User and Project hooks:'
     echo ""
 
     for dir in $directories; do
@@ -182,31 +181,7 @@ git-hooks run "$0" "$@"';
     fi
 }
 
-function install_global 
-{
-    TEMPLATE="$HOME/.git-template-with-git-hooks"
-    if [ ! -d "${TEMPLATE}" ] ; then
-        DEFAULT=/usr/share/git-core/templates
-        if [ -d ${DEFAULT} ] ; then
-            cp -rf /usr/share/git-core/templates "${TEMPLATE}"
-        else
-            mkdir -p "${TEMPLATE}/hooks"
-        fi
-        cmd="#!/usr/bin/env bash
-echo \"git hooks not installed in this repository.  Run 'git hooks --install' to install it or 'git hooks -h' for more information.\"";
-        install_hooks_into "${TEMPLATE}" "${cmd}"
-        mv "${TEMPLATE}/hooks.old" "${TEMPLATE}/hooks.original"
-    fi
-    git config --global init.templatedir "${TEMPLATE}"
-    echo "Git global config init.templatedir is now set to ${TEMPLATE}"
-}
-
-function uninstall_global 
-{
-    git config --global --unset init.templatedir
-}
-
-function report_error 
+function report_error
 {
     echo "Hook failed: $last_run_hook"
     exit 1
@@ -225,15 +200,9 @@ case $1 in
     --install|--uninstall )
         install_hooks "$1"
         ;;
-    --install-global|--installglobal )
-        install_global
-        ;;
-    --uninstall-global|--uninstallglobal )
-        uninstall_global
-        ;;
     -h|--help|-? )
         echo 'Git Hooks'
-        echo '    A tool to manage project, user, and global Git hooks for multiple git repositories.'
+        echo '    A tool to manage project and user Git hooks for multiple git repositories.'
         echo '    https://github.com/icefox/git-hooks'
         echo ''
         echo 'Options:'
@@ -241,12 +210,6 @@ case $1 in
         echo '                   git hooks run [hook].  Move old hooks directory to hooks.old'
         echo '    --uninstall    Remove existing hooks in this repository and rename hooks.old'
         echo '                   back to hooks'
-        echo '    --install-global'
-        echo '                   Create a template .git directory that that will be used whenever'
-        echo '                   a git repository is created or cloned that will remind the user'
-        echo '                   to install git-hooks.'
-        echo '    --uninstall-global'
-        echo '                   Turn off the global .git directory template that has the reminder.'
         echo "    run <cmd>      Run the hooks for <cmd> (such as pre-commit)"
         echo "    (no arguments) Show currently installed hooks"
         ;;
