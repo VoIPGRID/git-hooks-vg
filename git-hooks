@@ -26,6 +26,42 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+# Be more verbose by setting GIT_HOOKS_VERBOSE.
+export GIT_HOOKS_VERBOSE=${GIT_HOOKS_VERBOSE:-}
+
+# Space separated hooks to ignore.
+export GIT_HOOKS_IGNORE=${GIT_HOOKS_IGNORE:-""}
+
+# Skip usingdocker when running hooks by setting GIT_HOOKS_LOCAL.
+export GIT_HOOKS_LOCAL=${GIT_HOOKS_LOCAL:-}
+
+# Which container to use for running docker commands: web/webapp.
+export GIT_HOOKS_DOCKER=${GIT_HOOKS_DOCKER:-web}
+
+# Alternative ways of running ./manage, for non-docker use only.
+export GIT_HOOKS_DOCKER_MANAGE=${GIT_HOOKS_DOCKER_MANAGE:-./manage}
+export GIT_HOOKS_MANAGE=${GIT_HOOKS_MANAGE:-$GIT_HOOKS_DOCKER_MANAGE}
+
+
+RESET=$(echo -e "\033[0m")
+BOLD=$(echo -e "\033[1m")
+YELLOW=$(echo -e "\033[33m")
+BLUE_BG=$(echo -e "\033[44m")
+
+function header
+{
+    local title="$1"
+    echo "${BLUE_BG}${YELLOW}${BOLD}@@ ${title}${RESET}"
+    echo "------------------------------------------"
+}
+
+function header2
+{
+    local title="$1"
+    echo "### ${BOLD}${title}${RESET}"
+    echo
+}
+
 function hook_dirs
 {
     if [ ! -z "${1}" ] ; then
@@ -105,15 +141,21 @@ function run_hooks
         return 1
     fi
     shift 1
+
+    index=0
+
     for hook in $(list_hooks_in_dir "${dir}" 1)
     do
         export last_run_hook="${hook} $*"
         if [ ! -z "${GIT_HOOKS_VERBOSE}" ] ; then
-            echo -n "@@ Running hook: "
-            echo -n "$(basename "$(dirname "${hook}")")"
-            echo "/$(basename "${hook}")"
+            if [ "${index}" -eq 0 ] ; then
+                header "$(basename "${dir}")"
+            fi
+            header2 "$(basename "${hook}")"
         fi
         ${hook} "$@"
+
+        index=$((index+1))
     done
 }
 
