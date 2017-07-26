@@ -39,7 +39,6 @@ function hook_dirs
     if [ $(git rev-parse --is-bare-repository) = 'false' ]; then
         cd $(git rev-parse --show-toplevel)
         echo "${PWD}/git_hooks${hook}"
-        echo "${PWD}/.githooks${hook}"
     fi
     fi
 }
