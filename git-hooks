@@ -34,10 +34,10 @@ function hook_dirs
         hook=""
     fi
     echo "${HOME}/.git_hooks${hook}"
-    git rev-parse --git-dir &> /dev/null
-    if [ $? -eq 0 ]; then
-    if [ $(git rev-parse --is-bare-repository) = 'false' ]; then
-        cd $(git rev-parse --show-toplevel)
+
+    if git rev-parse --git-dir &> /dev/null; then
+    if [ "$(git rev-parse --is-bare-repository)" = 'false' ]; then
+        cd "$(git rev-parse --show-toplevel)"
         echo "${PWD}/git_hooks${hook}"
     fi
     fi
@@ -48,7 +48,7 @@ function list_hooks_in_dir
     path="${1}"
     level="${2}"
 
-    find --help 2>&1 | grep -- '-L' 2>/dev/null >/dev/null
+    find . --help 2>&1 | grep -- '-L' 2>/dev/null >/dev/null
     if [ $? -eq 1 ] ; then
     Lopt=
     else
@@ -56,8 +56,8 @@ function list_hooks_in_dir
     fi
 
     find ${Lopt} "${path}/" \
-     -mindepth ${level} \
-     -maxdepth ${level} \
+     -mindepth "${level}" \
+     -maxdepth "${level}" \
      \( -perm -100 -o -perm -010 -o -perm -001 \) \
      -type f 2>/dev/null \
     | grep -v "^.$" | sort
@@ -65,10 +65,8 @@ function list_hooks_in_dir
 
 function list_hooks
 {
-    GITDIR=`git rev-parse --git-dir`
-    cat "${GITDIR}/hooks/pre-commit" 2> /dev/null | grep 'git-hooks' > /dev/null 2> /dev/null
-
     local dir_names=(User Repository)
+    # shellcheck disable=2155
     local directories=$(hook_dirs)
     local index=0
 
@@ -84,16 +82,16 @@ function list_hooks
 
     for dir in $directories; do
         echo -e "\033[0;33m${dir_names[$index]}\033[0m - ${dir} "
-        index=$(($index+1))
-        for hook in `list_hooks_in_dir "${dir}" 2` ; do
+        index=$((index+1))
+        for hook in $(list_hooks_in_dir "${dir}" 2) ; do
             hook_name=$(basename "$hook")
             current_dir=$(dirname "$hook")
             if [ "$current_dir" != "$last_dir" ]; then
-                echo $(basename "$current_dir")
+                basename "$current_dir"
                 last_dir="$current_dir"
             fi
             about=$(${hook} "--about")
-            echo "  "$(printf "%-${space_size}s%s" $(echo -e "\033[1;36m${hook_name}\033[0m___" | sed -e 's/-/_/g' )  | sed -e 's/ /-/g' -e 's/_/ /g' )"- $about"
+            echo "  " "$(printf "%-${space_size}s%s" "$(echo -e "\033[1;36m${hook_name}\033[0m___" | sed -e 's/-/_/g' )"  | sed -e 's/ /-/g' -e 's/_/ /g' )""- $about"
         done
         echo ""
     done
@@ -107,13 +105,13 @@ function run_hooks
         return 1
     fi
     shift 1
-    for hook in `list_hooks_in_dir "${dir}" 1`
+    for hook in $(list_hooks_in_dir "${dir}" 1)
     do
-        export last_run_hook="${hook} $@"
-        if [ ! -z ${GIT_HOOKS_VERBOSE} ] ; then
+        export last_run_hook="${hook} $*"
+        if [ ! -z "${GIT_HOOKS_VERBOSE}" ] ; then
             echo -n "@@ Running hook: "
-            echo -n `basename \`dirname "${hook}"\``
-            echo "/`basename "${hook}"`"
+            echo -n "$(basename "$(dirname "${hook}")")"
+            echo "/$(basename "${hook}")"
         fi
         ${hook} "$@"
     done
@@ -122,13 +120,13 @@ function run_hooks
 function run_hook
 {
     set -e
-    hook=`basename "${1}"`
-    if [ -z ${hook} ] ; then
+    hook=$(basename "${1}")
+    if [ -z "${hook}" ] ; then
         echo "run requires a hook argument"
         return 1
     fi
     shift 1
-    for dir in `hook_dirs "${hook}"`; do
+    for dir in $(hook_dirs "${hook}"); do
         if [ ! -d "${dir}" ] ; then
             continue
         fi
@@ -156,8 +154,7 @@ function install_hooks_into
 
 function install_hooks
 {
-    GITDIR=`git rev-parse --git-dir`
-    if [ ! $? -eq 0 ] ; then
+    if ! GITDIR=$(git rev-parse --git-dir) ; then
         echo "$1 must be run inside a git repository"
         return 1
     fi
@@ -167,6 +164,7 @@ function install_hooks
             echo "hooks.old already exists, perhaps you already installed?"
             return 1
         fi
+    # shellcheck disable=2016
     cmd='#!/usr/bin/env bash
 git-hooks run "$0" "$@"';
     install_hooks_into "${PWD}" "${cmd}"
@@ -189,6 +187,7 @@ function report_error
 
 case $1 in
     run )
+        # shellcheck disable=2153
         if [ ! -z "${GIT_DIR}" ] ; then
             unset GIT_DIR
         fi
