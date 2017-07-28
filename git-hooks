@@ -30,7 +30,7 @@
 export GIT_HOOKS_VERBOSE=${GIT_HOOKS_VERBOSE:-}
 
 # Space separated hooks to ignore.
-export GIT_HOOKS_IGNORE=${GIT_HOOKS_IGNORE:-""}
+export GIT_HOOKS_IGNORE=(${GIT_HOOKS_IGNORE:-""})
 
 # Skip usingdocker when running hooks by setting GIT_HOOKS_LOCAL.
 export GIT_HOOKS_LOCAL=${GIT_HOOKS_LOCAL:-}
@@ -72,10 +72,10 @@ function hook_dirs
     echo "${HOME}/.git_hooks${hook}"
 
     if git rev-parse --git-dir &> /dev/null; then
-    if [ "$(git rev-parse --is-bare-repository)" = 'false' ]; then
-        cd "$(git rev-parse --show-toplevel)"
-        echo "${PWD}/git_hooks${hook}"
-    fi
+        if [ "$(git rev-parse --is-bare-repository)" = 'false' ]; then
+            cd "$(git rev-parse --show-toplevel)"
+            echo "${PWD}/git_hooks${hook}"
+        fi
     fi
 }
 
@@ -86,17 +86,24 @@ function list_hooks_in_dir
 
     find . --help 2>&1 | grep -- '-L' 2>/dev/null >/dev/null
     if [ $? -eq 1 ] ; then
-    Lopt=
+        Lopt=
     else
-    Lopt=-L
+        Lopt=-L
     fi
 
-    find ${Lopt} "${path}/" \
-     -mindepth "${level}" \
-     -maxdepth "${level}" \
-     \( -perm -100 -o -perm -010 -o -perm -001 \) \
-     -type f 2>/dev/null \
-    | grep -v "^.$" | sort
+    for hook in $(find ${Lopt} "${path}/" \
+             -mindepth "${level}" \
+             -maxdepth "${level}" \
+             \( -perm -100 -o -perm -010 -o -perm -001 \) \
+             -type f 2>/dev/null \
+            | grep -v "^.$" | sort) ; do
+        hook_name=$(basename "$hook")
+        if [[ " ${GIT_HOOKS_IGNORE[*]} " = *" ${hook_name} "* ]]; then
+            continue
+        fi
+
+        echo "${hook}"
+    done
 }
 
 function list_hooks
@@ -117,8 +124,10 @@ function list_hooks
     echo ""
 
     for dir in $directories; do
-        echo -e "\033[0;33m${dir_names[$index]}\033[0m - ${dir} "
+        echo -e "\033[0;33m${dir_names[${index}]}\033[0m - ${dir} "
         index=$((index+1))
+
+        hookcount=0
         for hook in $(list_hooks_in_dir "${dir}" 2) ; do
             hook_name=$(basename "$hook")
             current_dir=$(dirname "$hook")
@@ -128,7 +137,11 @@ function list_hooks
             fi
             about=$(${hook} "--about")
             echo "  " "$(printf "%-${space_size}s%s" "$(echo -e "\033[1;36m${hook_name}\033[0m___" | sed -e 's/-/_/g' )"  | sed -e 's/ /-/g' -e 's/_/ /g' )""- $about"
+            hookcount=$((hookcount+1))
         done
+        if [ $hookcount -eq 0 ]; then
+            echo "no hooks to run"
+        fi
         echo ""
     done
 }
