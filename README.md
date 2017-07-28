@@ -17,7 +17,7 @@ git will invoke `git-hooks` in the background when you run `git hooks`.
 
 For the latest master version, and assuming you want to put the executable in `/usr/local/bin/`:
 ```
-$ curl -o /usr/local/bin/git-hooks https://raw.githubusercontent.com/wearespindle/git-hooks/master/git-hooks
+$ curl -o /usr/local/bin/git-hooks https://raw.githubusercontent.com/VoIPGRID/git-hooks/master/git-hooks
 $ chmod +x /usr/local/bin/git-hooks
 ```
 
