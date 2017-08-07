@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 #
 # Copyright (c) 2010-2014, Benjamin C. Meyer <ben@meyerhome.net>
 # All rights reserved.
@@ -159,12 +159,14 @@ function run_hooks
 
     for hook in $(list_hooks_in_dir "${dir}" 1)
     do
-        export last_run_hook="${hook} $*"
+        hookname="$(basename "${dir}")"
+        hookfile="$(basename "${hook}")"
+        export last_run_hook="${hookname}/${hookfile}"
         if [ ! -z "${GIT_HOOKS_VERBOSE}" ] ; then
             if [ "${index}" -eq 0 ] ; then
-                header "$(basename "${dir}")"
+                header "${hookname}"
             fi
-            header2 "$(basename "${hook}")"
+            header2 "${hookfile}"
         fi
         ${hook} "$@"
 
@@ -174,7 +176,7 @@ function run_hooks
 
 function run_hook
 {
-    set -e
+    set -eE
     hook=$(basename "${1}")
     if [ -z "${hook}" ] ; then
         echo "run requires a hook argument"
@@ -187,7 +189,7 @@ function run_hook
         fi
         run_hooks "${dir}" "$@"
     done
-    set +e
+    set +eE
 }
 
 function install_hooks_into
@@ -235,9 +237,8 @@ git-hooks run "$0" "$@"';
 
 function report_error
 {
-    echo "Hook failed: $last_run_hook"
+    echo "Did not pass: $last_run_hook"
     exit 1
-
 }
 
 case $1 in

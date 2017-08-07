@@ -1,0 +1,21 @@
+#!/bin/bash
+
+case "${1}" in
+    --about )
+        echo -n "Clean up excess space from Python and HTML files using pepclean which is: "
+        if ! which pepclean > /dev/null; then
+            echo "not installed"
+        else
+            echo "installed"
+        fi
+        ;;
+    * )
+        if ! which pepclean > /dev/null; then
+            exit 0
+        fi
+
+        # Replace tabs with spaces, remove trailing spaces, remove trailing newlines.
+        find . '(' -name '*.py' -o -name '*.html' ')' -print0 | \
+                xargs --no-run-if-empty -0 pepclean
+        ;;
+esac

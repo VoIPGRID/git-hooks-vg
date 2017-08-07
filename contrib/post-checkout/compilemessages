@@ -1,0 +1,95 @@
+#!/bin/bash
+
+# shellcheck source=/dev/null
+source "$(dirname "${0}")/../docker.sh"
+
+
+function compilemessages
+{
+    if ! python -c 'import django' > /dev/null 2>&1; then
+        cmd="docker_run_manage compilemessages"
+    else
+        if ! which msgfmt > /dev/null 2>&1; then
+            cmd="docker_run_manage compilemessages"
+        else
+            cmd="local_or_docker_run_manage compilemessages"
+        fi
+    fi
+
+    # Find *.mo files.
+    mos=()
+    while IFS= read -d $'\0' -r file ; do
+        mos=("${mos[@]}" "$file")
+    done < <(find ./voipgrid -name \*.mo -print0)
+
+    if [ -z "${mos[*]}" ]; then
+        # Compile when there are no mos.
+        if [ ! -z "${GIT_HOOKS_VERBOSE}" ]; then
+            $cmd
+        elif ! result=$($cmd 2>&1); then
+            echo "${result}"
+        fi
+    else
+        # Strip file extension.
+        for i in "${!mos[@]}"; do
+            mos[i]="${mos[i]%%.mo}"
+        done
+
+        # Find *.po files.
+        pos=()
+        while IFS= read -d $'\0' -r file ; do
+            pos=("${pos[@]}" "$file")
+        done < <(find ./voipgrid -name \*.po -print0)
+
+        # Strip file extension.
+        for i in "${!pos[@]}"; do
+            pos[i]="${pos[i]%%.po}"
+        done
+
+        # Check for any *.po file that has an outdated mo file.
+        for((i=0;i<${#pos[@]};i++)); do
+            if [[ " ${mos[*]} " = *" ${pos[i]} "* ]]; then
+                mofile=${pos[i]}".mo"
+                pofile=${pos[i]}".po"
+                if [[ $mofile -ot $pofile ]]; then
+                    # Compile when mo is older.
+                    if [ ! -z "${GIT_HOOKS_VERBOSE}" ]; then
+                        $cmd
+                    elif ! result=$($cmd 2>&1); then
+                        echo "${result}"
+                    fi
+
+                    break
+                fi
+            fi
+        done
+    fi
+}
+
+case "${1}" in
+    --about )
+        echo -n "Run compilemessages using django which is: "
+
+        if ! python -c 'import django' > /dev/null 2>&1; then
+            echo "not installed"
+        else
+            echo "installed"
+        fi
+        ;;
+    * )
+        # Do nothing for file checkouts `git checkout <filename>`.
+        # $1 = prevHEAD
+        # $2 = newHEAD
+        # $3 = checkoutType
+        if [[ $3 == 1 ]]; then
+            checkoutType='branch'
+        else
+            checkoutType='file'
+        fi
+        if [ $checkoutType = 'file' ]; then
+            exit 0
+        fi
+
+        compilemessages
+        ;;
+esac

@@ -1,0 +1,33 @@
+#!/bin/bash
+
+function test_file {
+    file="${1}"
+    if [ ! -f "${file}" ] ; then
+        return
+    fi
+    if head -n 1 "${file}" | grep '/sh\|/bash' | grep '^#!/' > /dev/null ; then
+        set -e
+        shellcheck "${file}"
+        set +e
+    fi
+}
+
+case "${1}" in
+    --about )
+        echo -n "Lint bash scripts using shellcheck which is: "
+        if ! which shellcheck > /dev/null; then
+            echo "not installed"
+        else
+            echo "installed"
+        fi
+        ;;
+    * )
+        if ! which shellcheck > /dev/null; then
+            exit 0
+        fi
+
+        for file in $(git diff-index --cached --name-only HEAD); do
+            test_file "${file}"
+        done
+        ;;
+esac
