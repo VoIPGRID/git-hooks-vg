@@ -17,8 +17,8 @@ git will invoke `git-hooks` in the background when you run `git hooks`.
 
 For the latest master version, and assuming you want to put the executable in `/usr/local/bin/`:
 ```
-$ curl -o /usr/local/bin/git-hooks https://raw.githubusercontent.com/VoIPGRID/git-hooks/master/git-hooks
-$ chmod +x /usr/local/bin/git-hooks
+$ curl -o /usr/local/bin/git-hooks-vg https://raw.githubusercontent.com/VoIPGRID/git-hooks/master/git-hooks-vg
+$ chmod +x /usr/local/bin/git-hooks-vg
 ```
 
 Run `git-hooks --install` in a git project to tell it to use git-hooks hooks.  You can run

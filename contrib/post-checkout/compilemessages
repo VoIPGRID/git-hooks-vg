@@ -24,7 +24,7 @@ function compilemessages
 
     if [ -z "${mos[*]}" ]; then
         # Compile when there are no mos.
-        if [ ! -z "${GIT_HOOKS_VERBOSE}" ]; then
+        if [ ! -z "${GIT_HOOKS_VG_VERBOSE}" ]; then
             $cmd
         elif ! result=$($cmd 2>&1); then
             echo "${result}"
@@ -54,7 +54,7 @@ function compilemessages
                 pofile=${pos[i]}".po"
                 if [[ $mofile -ot $pofile ]]; then
                     # Compile when mo is older.
-                    if [ ! -z "${GIT_HOOKS_VERBOSE}" ]; then
+                    if [ ! -z "${GIT_HOOKS_VG_VERBOSE}" ]; then
                         $cmd
                     elif ! result=$($cmd 2>&1); then
                         echo "${result}"

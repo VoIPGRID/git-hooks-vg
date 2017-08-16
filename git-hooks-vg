@@ -26,21 +26,21 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-# Be more verbose by setting GIT_HOOKS_VERBOSE.
-export GIT_HOOKS_VERBOSE=${GIT_HOOKS_VERBOSE:-}
+# Be more verbose by setting GIT_HOOKS_VG_VERBOSE.
+export GIT_HOOKS_VG_VERBOSE=${GIT_HOOKS_VG_VERBOSE:-}
 
 # Space separated hooks to ignore.
-export GIT_HOOKS_IGNORE=(${GIT_HOOKS_IGNORE:-""})
+export GIT_HOOKS_VG_IGNORE=(${GIT_HOOKS_VG_IGNORE:-""})
 
-# Skip usingdocker when running hooks by setting GIT_HOOKS_LOCAL.
-export GIT_HOOKS_LOCAL=${GIT_HOOKS_LOCAL:-}
+# Skip usingdocker when running hooks by setting GIT_HOOKS_VG_LOCAL.
+export GIT_HOOKS_VG_LOCAL=${GIT_HOOKS_VG_LOCAL:-}
 
 # Which container to use for running docker commands: web/webapp.
-export GIT_HOOKS_DOCKER=${GIT_HOOKS_DOCKER:-web}
+export GIT_HOOKS_VG_DOCKER=${GIT_HOOKS_VG_DOCKER:-web}
 
 # Alternative ways of running ./manage, for non-docker use only.
-export GIT_HOOKS_DOCKER_MANAGE=${GIT_HOOKS_DOCKER_MANAGE:-./manage}
-export GIT_HOOKS_MANAGE=${GIT_HOOKS_MANAGE:-$GIT_HOOKS_DOCKER_MANAGE}
+export GIT_HOOKS_VG_DOCKER_MANAGE=${GIT_HOOKS_VG_DOCKER_MANAGE:-./manage}
+export GIT_HOOKS_VG_MANAGE=${GIT_HOOKS_VG_MANAGE:-$GIT_HOOKS_VG_DOCKER_MANAGE}
 
 
 RESET=$(echo -e "\033[0m")
@@ -69,12 +69,12 @@ function hook_dirs
     else
         hook=""
     fi
-    echo "${HOME}/.git_hooks${hook}"
+    echo "${HOME}/.git_hooks_vg${hook}"
 
     if git rev-parse --git-dir &> /dev/null; then
         if [ "$(git rev-parse --is-bare-repository)" = 'false' ]; then
             cd "$(git rev-parse --show-toplevel)"
-            echo "${PWD}/git_hooks${hook}"
+            echo "${PWD}/git_hooks_vg${hook}"
         fi
     fi
 }
@@ -98,7 +98,7 @@ function list_hooks_in_dir
              -type f 2>/dev/null \
             | grep -v "^.$" | sort) ; do
         hook_name=$(basename "$hook")
-        if [[ " ${GIT_HOOKS_IGNORE[*]} " = *" ${hook_name} "* ]]; then
+        if [[ " ${GIT_HOOKS_VG_IGNORE[*]} " = *" ${hook_name} "* ]]; then
             continue
         fi
 
@@ -162,7 +162,7 @@ function run_hooks
         hookname="$(basename "${dir}")"
         hookfile="$(basename "${hook}")"
         export last_run_hook="${hookname}/${hookfile}"
-        if [ ! -z "${GIT_HOOKS_VERBOSE}" ] ; then
+        if [ ! -z "${GIT_HOOKS_VG_VERBOSE}" ] ; then
             if [ "${index}" -eq 0 ] ; then
                 header "${hookname}"
             fi
@@ -223,7 +223,7 @@ function install_hooks
         fi
     # shellcheck disable=2016
     cmd='#!/usr/bin/env bash
-git-hooks run "$0" "$@"';
+git-hooks-vg run "$0" "$@"';
     install_hooks_into "${PWD}" "${cmd}"
     else
         if [ ! -d hooks.old ] ; then
@@ -257,7 +257,7 @@ case $1 in
     -h|--help|-? )
         echo 'Git Hooks'
         echo '    A tool to manage project and user Git hooks for multiple git repositories.'
-        echo '    https://github.com/icefox/git-hooks'
+        echo '    Based on https://github.com/icefox/git-hooks'
         echo ''
         echo 'Options:'
         echo '    --install      Replace existing hooks in this repository with a call to'
