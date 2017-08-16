@@ -109,8 +109,8 @@ function list_hooks_in_dir
 function list_hooks
 {
     local dir_names=(User Repository)
-    # shellcheck disable=2155
-    local directories=$(hook_dirs)
+    local directories
+    directories=$(hook_dirs)
     local index=0
 
     local hook_name=
@@ -221,6 +221,8 @@ function install_hooks
             echo "hooks.old already exists, perhaps you already installed?"
             return 1
         fi
+
+    # The following string is intentionally containing literals for $0 and $@.
     # shellcheck disable=2016
     cmd='#!/usr/bin/env bash
 git-hooks-vg run "$0" "$@"';
@@ -243,6 +245,8 @@ function report_error
 
 case $1 in
     run )
+        # GIT_DIR is not a misspelling of GITDIR, GIT_DIR is an actual env var
+        # used by git but we don't need/want it here.
         # shellcheck disable=2153
         if [ ! -z "${GIT_DIR}" ] ; then
             unset GIT_DIR
