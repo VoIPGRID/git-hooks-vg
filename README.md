@@ -1,7 +1,7 @@
-**git-hooks** - A tool to manage project and user Git hooks for multiple git repositories.
+**git-hooks-vg** - A tool to manage project and user Git hooks for multiple git repositories.
 
-git-hooks lets hooks be installed inside git repositories and users home directory.
-When a hook is called by `git`, git-hooks will check each of these locations for the hooks to run.
+git-hooks-vg lets hooks be installed inside git repositories and users home directory.
+When a hook is called by `git`, git-hooks-vg will check each of these locations for the hooks to run.
 
 
 Install
@@ -17,12 +17,12 @@ git will invoke `git-hooks` in the background when you run `git hooks`.
 
 For the latest master version, and assuming you want to put the executable in `/usr/local/bin/`:
 ```
-$ curl -o /usr/local/bin/git-hooks-vg https://raw.githubusercontent.com/VoIPGRID/git-hooks/master/git-hooks-vg
+$ curl -o /usr/local/bin/git-hooks-vg https://raw.githubusercontent.com/VoIPGRID/git-hooks-git_ho/master/git-hooks-vg
 $ chmod +x /usr/local/bin/git-hooks-vg
 ```
 
-Run `git-hooks --install` in a git project to tell it to use git-hooks hooks.  You can run
-`git-hooks --uninstall` at any time to revert to your previous hooks.  (These are usually the
+Run `git-hooks-vg --install` in a git project to tell it to use git-hooks-vg hooks.  You can run
+`git-hooks-vg --uninstall` at any time to revert to your previous hooks.  (These are usually the
 default hooks, which do nothing.)
 
 
@@ -49,23 +49,23 @@ Or very person-specific hooks, such as:
 
 For more details about the different hooks available to you, check out:
 
-	   http://www.kernel.org/pub/software/scm/git/docs/githooks.html
+       http://www.kernel.org/pub/software/scm/git/docs/githooks.html
 
 
 
 Locations
 =========
 
-git-hooks provide a way to manage and share your hooks using three locations:
+git-hooks-vg provide a way to manage and share your hooks using three locations:
 
- - **User hooks**, installed in `~/.git_hooks/`
- - **Project hooks**, installed in `git_hooks/` or `.githooks/` in a project.
+ - **User hooks**, installed in `~/.git_hooks_vg/`
+ - **Project hooks**, installed in `git_hooks_vg/` in a project.
 
 
 Listing hooks
 =============
 
-When `git-hooks` is run without arguments, it lists all hooks installed on your system.  It will run the hooks with the `--about` argument to generate the description shown.
+When `git-hooks-vg` is run without arguments, it lists all hooks installed on your system.  It will run the hooks with the `--about` argument to generate the description shown.
 
 Check out the hooks in `contrib/` for some examples.
 
@@ -73,6 +73,4 @@ Check out the hooks in `contrib/` for some examples.
 Creating hooks
 ==============
 
-To keep things organized, git-hooks looks for scripts in **sub-directories** named after the git hook name.  For example, this project has the following `pre-commit` script in the following location:
-
-	   git_hooks/pre-commit/bsd
+To keep things organized, git-hooks-vg looks for scripts in **sub-directories** named after the git hook name.
