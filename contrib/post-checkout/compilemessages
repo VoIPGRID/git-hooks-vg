@@ -28,6 +28,7 @@ function compilemessages
             $cmd
         elif ! result=$($cmd 2>&1); then
             echo "${result}"
+            exit 1
         fi
     else
         # Strip file extension.
@@ -57,6 +58,7 @@ function compilemessages
                         $cmd
                     elif ! result=$($cmd 2>&1); then
                         echo "${result}"
+                        exit 1
                     fi
 
                     break
