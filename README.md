@@ -1,3 +1,5 @@
+NOTE: This project has been moved to gitlab! https://gitlab.wearespindle.com/voipgrid/git-hooks-vg
+
 **git-hooks-vg** - A tool to manage project and user Git hooks for multiple git repositories.
 
 git-hooks-vg lets hooks be installed inside git repositories and users home directory.
